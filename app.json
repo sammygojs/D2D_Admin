@@ -38,8 +38,5 @@
     "experiments": {
       "typedRoutes": true
     }
-  },
-  "extra": {
-  "googleApiKey": "AIzaSyDnFzMr6sqgcsWUrMaS5fa8ooi7-A9EAWw"
-}
+  }
 }

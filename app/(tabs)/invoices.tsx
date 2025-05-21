@@ -3,7 +3,7 @@ import { StyleSheet, Text, View } from 'react-native';
 export default function InvoicesScreen() {
     return (
         <View style={styles.container}>
-            <Text style={styles.text}>Bookings</Text>
+            <Text style={styles.text}>Invoices</Text>
             <Text>Your recent rides will appear here.</Text>
         </View>
     );
