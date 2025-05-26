@@ -1,62 +1,200 @@
-# Welcome to your Expo app 👋
+# 🚖 Taxi Booking App
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+A modern cross-platform Taxi Booking App built using **React Native (Expo)** and powered by **AWS Lambda**, **API Gateway**, and **DynamoDB**. This app enables users to manage taxi bookings, track earnings, generate invoices, and securely access data using a passcode screen.
 
-## Get started
+---
 
-1. Install dependencies
+## 📱 Features
 
-   ```bash
-   npm install
-   ```
+### 🔐 Authentication
 
-2. Start the app
+* Secure passcode screen to protect access to the app.
+* Configurable 4-digit code (e.g., stored in SecureStore or env vars in production).
 
-   ```bash
-   npx expo start
-   ```
+### 🏠 Home Dashboard
 
-In the output, you'll find options to open the app in a
+* Displays:
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+  * Total bookings count
+  * Total fare (sum of all bookings)
+  * Completed rides count + earnings
+  * Scheduled rides count + expected fare
+  * Next two upcoming bookings
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
+### 📋 Bookings Management
 
-## Get a fresh project
+* Add new bookings with:
 
-When you're ready, run:
+  * Customer info
+  * Pickup/dropoff
+  * Fare
+  * Payment method (Cash/Card)
+  * Payment status (Paid/Pending)
+  * Notes
+  * Date, pickup & dropoff times
+* View bookings list with:
+
+  * Infinite scroll (pagination)
+  * Search capability
+  * Select and view booking details
+* Edit & update bookings
+* Delete bookings with confirmation modal
+
+### 🧾 Invoice Generation
+
+* Generate PDF invoices with booking details
+* Share invoice using device-native sharing
+
+### 📆 Date & Time Pickers
+
+* Cross-platform support for DatePicker and TimePicker
+* Web: React-Datepicker & React-Time-Picker
+* Mobile: @react-native-community/datetimepicker
+
+### 🌐 API Backend
+
+* **API Gateway**: Exposes RESTful endpoints
+* **AWS Lambda**: Stateless logic for CRUD
+* **DynamoDB**: NoSQL database storing bookings
+
+---
+
+## 🛠️ Tech Stack
+
+### Frontend
+
+* React Native (Expo)
+* TypeScript
+* Expo Router
+* React Native Paper / StyleSheet API
+* PDF generation with expo-print
+* Sharing with expo-sharing
+
+### Backend (AWS)
+
+* AWS Lambda
+* API Gateway (v1 Stage)
+* DynamoDB
+
+### Tools & Libraries
+
+* Axios (API requests)
+* Animated API (Loading overlays)
+* React Native Modal
+* React DatePicker & TimePicker (Web)
+* Expo Vector Icons (Ionicons)
+
+---
+
+## ⚙️ Setup Instructions
+
+### 📦 Prerequisites
+
+* Node.js (>=18)
+* Yarn or npm
+* Expo CLI (`npm install -g expo-cli`)
+* AWS account with:
+
+  * API Gateway + Lambda setup
+  * DynamoDB table named `Bookings`
+
+### 📁 Folder Structure
 
 ```bash
-npm run reset-project
+.
+├── app
+│   ├── index.tsx             # Home screen
+│   ├── bookings.tsx          # Bookings management
+│   └── passcode.tsx          # Passcode entry
+├── components
+│   ├── ConfirmModal.tsx      # Reusable confirm modal
+│   └── ui/TabBarBackground.tsx
+├── constants
+│   └── Colors.ts
+├── styles
+│   └── index.css             # Web picker overrides
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+### 🔧 Environment
 
-## Learn more
+Update API URL in the following files:
 
-To learn more about developing your project with Expo, look at the following resources:
+```ts
+const API_URL = 'https://YOUR_API_ID.execute-api.us-east-1.amazonaws.com/v1/bookings';
+```
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+You may store this in `.env` with expo-constants in production.
 
-## Join the community
+### 🚀 Run Locally
 
-Join our community of developers creating universal apps.
+```bash
+git clone https://github.com/your-username/taxi-booking-app
+cd taxi-booking-app
+npm install
+expo start
+```
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+### 🧪 Test Bookings API
 
+Use Postman or CURL to hit the backend:
 
-node -v
-npmv23.11.0
-sumitakoliya@Sumits-MacBook-Air D2DAdmin % npm -v
-10.9.2
-sumitakoliya@Sumits-MacBook-Air D2DAdmin % npm install -g expo-cli
+```bash
+curl https://your-api-url/v1/bookings
+```
 
-mkdir <myApp> && cd <myApp>
+---
 
-npx create-expo-app .
+## 🗂️ DynamoDB Schema
 
+**Table Name**: `Bookings`
+
+### Primary Key:
+
+* `bookingId` (string, UUID)
+
+### Attributes:
+
+* `customerName`: string
+* `contactNumber`: string
+* `pickup`: string
+* `dropoff`: string
+* `date`: string (YYYY-MM-DD)
+* `pickupTime`: string (ISO)
+* `dropoffTime`: string (ISO)
+* `notes`: string
+* `fare`: string (optional)
+* `email`: string (optional)
+* `paymentMethod`: "cash" | "card"
+* `paymentStatus`: "paid" | "pending"
+
+---
+
+## 📈 Future Improvements
+
+* ✅ SecureStore integration for passcode
+* ✅ Push notifications
+* ✅ User authentication (Cognito or Firebase Auth)
+* ✅ Admin dashboard (Web)
+* ✅ Driver tracking (Live GPS)
+* ✅ Stripe/PayPal integration for online payments
+
+---
+
+## 📄 License
+
+MIT License. You are free to use, modify, and distribute.
+
+---
+
+## 🙌 Acknowledgements
+
+* React Native & Expo team
+* AWS Lambda + API Gateway team
+* Expo community for great libraries (expo-print, expo-sharing)
+
+---
+
+## 📬 Contact
+
+Built by \Sumit Akoliya.
+Feel free to connect: \[[sammy.akoliya@gmail.com](sammy.akoliya@gmail.com)] / \[[LinkedIn/GitHub link](https://www.linkedin.com/in/sumitakoliya/),(https://github.com/sammygojs)]

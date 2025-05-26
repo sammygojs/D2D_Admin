@@ -1,6 +1,7 @@
+import { useFocusEffect } from '@react-navigation/native';
 import axios from 'axios';
 import { useRouter } from 'expo-router';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 
@@ -17,6 +18,16 @@ export default function HomeScreen() {
         const fetchedBookings = response.data.bookings || [];
         setBookings(fetchedBookings);
 
+        // console.log('--- All Bookings ---');
+        // fetchedBookings.forEach((b, i) => {
+        //   console.log(`Booking ${i + 1}:`);
+        //   console.log('Date:', b.date);
+        //   console.log('PickupTime (raw):', b.pickupTime);
+        //   console.log('Parsed pickup datetime:', new Date(b.pickupTime));
+        //   console.log('Now:', new Date());
+        // });
+
+
         const fareSum = fetchedBookings.reduce((acc, curr) => acc + (parseFloat(curr.fare) || 0), 0);
         setTotalFare(fareSum);
       } catch (err) {
@@ -29,18 +40,39 @@ export default function HomeScreen() {
     fetchBookings();
   }, []);
 
+  useFocusEffect(
+    useCallback(() => {
+      const fetchBookings = async () => {
+        try {
+          const response = await axios.get('https://0izwka3sk3.execute-api.us-east-1.amazonaws.com/v1/bookings');
+          const fetchedBookings = response.data.bookings || [];
+          setBookings(fetchedBookings);
+  
+          const fareSum = fetchedBookings.reduce((acc, curr) => acc + (parseFloat(curr.fare) || 0), 0);
+          setTotalFare(fareSum);
+        } catch (err) {
+          console.error('Error fetching bookings:', err);
+        } finally {
+          setLoading(false);
+        }
+      };
+  
+      fetchBookings();
+    }, [])
+  );
+
   const upcomingBookings = bookings
     .filter(b => {
       try {
-        const pickupDateTime = new Date(`${b.date}T${new Date(b.pickupTime).toISOString().split('T')[1]}`);
+        const pickupDateTime = new Date(`${b.date}T${b.pickupTime}:00`);
         return pickupDateTime > new Date();
       } catch {
         return false;
       }
     })
     .sort((a, b) => {
-      const aDate = new Date(`${a.date}T${new Date(a.pickupTime).toISOString().split('T')[1]}`);
-      const bDate = new Date(`${b.date}T${new Date(b.pickupTime).toISOString().split('T')[1]}`);
+      const aDate = new Date(`${a.date}T${a.pickupTime}:00`);
+      const bDate = new Date(`${b.date}T${b.pickupTime}:00`);
       return aDate.getTime() - bDate.getTime();
     })
     .slice(0, 2);
@@ -48,9 +80,12 @@ export default function HomeScreen() {
   // Completed bookings (pickupTime is in the past)
   const completedBookings = bookings.filter(b => {
     try {
-      const pickupDateTime = new Date(`${b.date}T${new Date(b.pickupTime).toISOString().split('T')[1]}`);
+      const [hour, minute] = b.pickupTime.split(':');
+      const pickupDateTime = new Date(b.date);
+      pickupDateTime.setHours(parseInt(hour), parseInt(minute), 0, 0);
       return pickupDateTime < new Date();
-    } catch {
+    } catch (err) {
+      console.warn('Skipping invalid completed booking:', b, err);
       return false;
     }
   });
@@ -59,7 +94,7 @@ export default function HomeScreen() {
   // Scheduled bookings (pickupTime is in the future)
   const scheduledBookings = bookings.filter(b => {
     try {
-      const pickupDateTime = new Date(`${b.date}T${new Date(b.pickupTime).toISOString().split('T')[1]}`);
+      const pickupDateTime = new Date(`${b.date}T${b.pickupTime}:00`);
       return pickupDateTime >= new Date();
     } catch {
       return false;
@@ -80,18 +115,33 @@ export default function HomeScreen() {
       </View> */}
 
       <View style={styles.card}>
+        {/* <Text style={styles.cardText}>📅 {bookings.length} Bookings Scheduled</Text>
+        <Text style={styles.cardText}>💷 £{totalFare.toFixed(2)} Total Fare</Text> */}
         <Text style={styles.cardText}>📅 {bookings.length} Bookings Scheduled</Text>
+        <Text style={styles.description}>All bookings including past and upcoming.</Text>
         <Text style={styles.cardText}>💷 £{totalFare.toFixed(2)} Total Fare</Text>
+        <Text style={styles.description}>Total fare from all recorded bookings.</Text>
+
       </View>
 
       <View style={styles.card}>
+        {/* <Text style={styles.cardText}>✅ {completedBookings.length} Completed Rides</Text>
+        <Text style={styles.cardText}>💷 £{completedFare.toFixed(2)} Earned</Text> */}
         <Text style={styles.cardText}>✅ {completedBookings.length} Completed Rides</Text>
+        <Text style={styles.description}>Trips where pickup time has already passed.</Text>
         <Text style={styles.cardText}>💷 £{completedFare.toFixed(2)} Earned</Text>
+        <Text style={styles.description}>Sum of fares from completed trips.</Text>
+
       </View>
 
       <View style={styles.card}>
+        {/* <Text style={styles.cardText}>🗓️ {scheduledBookings.length} Scheduled Rides</Text>
+        <Text style={styles.cardText}>💷 £{scheduledFare.toFixed(2)} Expected</Text> */}
         <Text style={styles.cardText}>🗓️ {scheduledBookings.length} Scheduled Rides</Text>
+        <Text style={styles.description}>Upcoming trips with a future pickup time.</Text>
         <Text style={styles.cardText}>💷 £{scheduledFare.toFixed(2)} Expected</Text>
+        <Text style={styles.description}>Estimated fare from future bookings.</Text>
+
       </View>
 
 
@@ -105,11 +155,19 @@ export default function HomeScreen() {
           <Text style={styles.cardText}>No upcoming bookings</Text>
         ) : (
           upcomingBookings.map((b, i) => {
-            const day = new Date(b.date).toLocaleDateString('en-UK', { weekday: 'long' });
-            const time = new Date(b.pickupTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            const pickupDateTime = new Date(`${b.date}T${b.pickupTime}:00`);
+            const day = pickupDateTime.toLocaleDateString('en-UK', {
+              weekday: 'long',
+              day: 'numeric',
+              month: 'short',
+              year: 'numeric',
+            });
+            
+            const time = pickupDateTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
             return (
               <Pressable
-                key={i}  // ✅ Move the key here
+                key={i}
                 onPress={() => router.push(`/bookings?bookingId=${b.bookingId}`)}
               >
                 <View style={styles.bookingPreview}>
@@ -118,13 +176,9 @@ export default function HomeScreen() {
                   <Text style={styles.smallText}>{b.pickup} → {b.dropoff}</Text>
                 </View>
               </Pressable>
-              // <View key={i} style={styles.bookingPreview}>
-              //   <Text style={styles.boldText}>{day} — {time}</Text>
-              //   <Text>{b.customerName}</Text>
-              //   <Text style={styles.smallText}>{b.pickup} → {b.dropoff}</Text>
-              // </View>
             );
           })
+
         )}
       </View>
 
@@ -138,6 +192,11 @@ export default function HomeScreen() {
 }
 
 const styles = StyleSheet.create({
+  description: {
+    fontSize: 13,
+    color: '#6b7280',
+    marginBottom: 12,
+  },
   container: {
     flex: 1,
     backgroundColor: '#ffffff',

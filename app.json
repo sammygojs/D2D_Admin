@@ -4,7 +4,7 @@
     "slug": "D2DAdmin",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images/icon.png",
+    "icon": "./assets/icon.png",
     "scheme": "d2dadmin",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,

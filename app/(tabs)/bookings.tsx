@@ -117,8 +117,12 @@ export default function BookingsScreen() {
 
         const bookingData = {
             customerName, contactNumber, pickup, dropoff,
-            pickupTime: pickupTime.toISOString(),
-            dropoffTime: dropoffTime.toISOString(),
+            // pickupTime: pickupTime.toISOString(),
+            pickupTime: pickupTime.toTimeString().split(' ')[0].slice(0, 5), // e.g., "17:45"
+
+            // dropoffTime: dropoffTime.toISOString(),
+            dropoffTime: dropoffTime.toTimeString().split(' ')[0].slice(0, 5),
+
             notes, email,
             date: date.toISOString().split('T')[0], // Format: YYYY-MM-DD
             fare,
