@@ -2,6 +2,7 @@ import ConfirmModal from '@/components/ConfirmModal';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import axios from 'axios';
 import * as Print from 'expo-print';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import * as Sharing from 'expo-sharing';
 import { useEffect, useRef, useState } from 'react';
 import 'react-calendar/dist/Calendar.css';
@@ -59,6 +60,17 @@ export default function BookingsScreen() {
     const API_URL = 'https://0izwka3sk3.execute-api.us-east-1.amazonaws.com/v1/bookings';
 
     const spinAnim = useRef(new Animated.Value(0)).current;
+    const { bookingId } = useLocalSearchParams();
+    const router = useRouter();
+
+    useEffect(() => {
+        if (bookingId) {
+          setMode('list');
+          fetchBookingById(bookingId as string);
+          // Optional reset
+          setTimeout(() => router.replace('/bookings'), 1000);
+        }
+      }, [bookingId]);
 
     useEffect(() => {
         if (isLoading) {
