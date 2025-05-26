@@ -1,0 +1,21 @@
+/* In your global CSS file or index.css */
+
+.customPickerInput {
+    width: 100%;
+    padding: 12px;
+    font-size: 16px;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    background-color: #f9fafb;
+    zIndex: 1;
+  }
+  
+  .react-datepicker-popper {
+    z-index: 9999 !important;
+  }
+  
+  .customCalendar {
+    z-index: 9999 !important;
+    position: relative;
+  }
+  

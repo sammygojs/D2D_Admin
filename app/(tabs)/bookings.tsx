@@ -1,15 +1,24 @@
 import ConfirmModal from '@/components/ConfirmModal';
+import DateTimePicker from '@react-native-community/datetimepicker';
 import axios from 'axios';
 import * as Print from 'expo-print';
 import * as Sharing from 'expo-sharing';
 import { useEffect, useRef, useState } from 'react';
+import 'react-calendar/dist/Calendar.css';
+import DatePicker from 'react-datepicker';
+import 'react-datepicker/dist/react-datepicker.css';
 import {
     ActivityIndicator,
     Alert,
     Animated,
-    FlatList, KeyboardAvoidingView, Pressable, ScrollView,
+    FlatList, KeyboardAvoidingView,
+    Platform,
+    Pressable, ScrollView,
     StyleSheet, Text, TextInput, View
 } from 'react-native';
+import TimePicker from 'react-time-picker';
+import 'react-time-picker/dist/TimePicker.css';
+import './index.css';
 
 
 
@@ -22,10 +31,18 @@ export default function BookingsScreen() {
     const [pickup, setPickup] = useState('');
     const [dropoff, setDropoff] = useState('');
     const [notes, setNotes] = useState('');
-    const [pickupTime, setPickupTime] = useState('');
-    const [dropoffTime, setDropoffTime] = useState('');
+    // const [pickupTime, setPickupTime] = useState('');
+    // const [dropoffTime, setDropoffTime] = useState('');
     const [email, setEmail] = useState('');
-    const [date, setDate] = useState('');
+    // const [date, setDate] = useState('');
+    const [date, setDate] = useState(new Date());
+    const [pickupTime, setPickupTime] = useState(new Date());
+    const [dropoffTime, setDropoffTime] = useState(new Date());
+
+    const [showDatePicker, setShowDatePicker] = useState(false);
+    const [showPickupTimePicker, setShowPickupTimePicker] = useState(false);
+    const [showDropoffTimePicker, setShowDropoffTimePicker] = useState(false);
+
     const [fare, setFare] = useState('');
     const [paymentStatus, setPaymentStatus] = useState<'paid' | 'pending'>('pending');
     const [paymentMethod, setPaymentMethod] = useState<'cash' | 'card'>('cash');
@@ -68,10 +85,13 @@ export default function BookingsScreen() {
         setPickup('');
         setDropoff('');
         setNotes('');
-        setPickupTime('');
-        setDropoffTime('');
+        // setPickupTime('');
+        // setDropoffTime('');
         setEmail('');
-        setDate('');
+        // setDate('');
+        setDate(new Date());
+        setPickupTime(new Date());
+        setDropoffTime(new Date());
         setFare('');
         setPaymentMethod('cash');
         setPaymentStatus('pending');
@@ -85,8 +105,15 @@ export default function BookingsScreen() {
 
         const bookingData = {
             customerName, contactNumber, pickup, dropoff,
-            pickupTime, dropoffTime, notes, email, date,
+            pickupTime: pickupTime.toISOString(),
+            dropoffTime: dropoffTime.toISOString(),
+            notes, email,
+            date: date.toISOString().split('T')[0], // Format: YYYY-MM-DD
+            fare,
+            paymentMethod,
+            paymentStatus,
         };
+
 
         setIsLoading(true); // start loading
 
@@ -131,10 +158,14 @@ export default function BookingsScreen() {
         setEmail(booking.email || '');
         setPickup(booking.pickup);
         setDropoff(booking.dropoff);
-        setPickupTime(booking.pickupTime || '');
-        setDropoffTime(booking.dropoffTime || '');
+        // setPickupTime(booking.pickupTime || '');
+        // setDropoffTime(booking.dropoffTime || '');
+        setPickupTime(booking.pickupTime ? new Date(booking.pickupTime) : new Date());
+        setDropoffTime(booking.dropoffTime ? new Date(booking.dropoffTime) : new Date());
+        setDate(booking.date ? new Date(booking.date) : new Date());
+
         setNotes(booking.notes || '');
-        setDate(booking.date);
+        // setDate(booking.date);
         setFare(booking.fare || '');
         setPaymentMethod(booking.paymentMethod || 'cash');
         setPaymentStatus(booking.paymentStatus || 'pending');
@@ -259,10 +290,6 @@ export default function BookingsScreen() {
                     backgroundColor: '#ffffff', flexDirection: 'row', alignItems: 'center',
                     borderBottomColor: '#e5e7eb', borderBottomWidth: 1,
                 }}>
-                    {/* <View style={{
-                    paddingTop: 48, paddingBottom: 12, paddingHorizontal: 16,
-                    backgroundColor: '#1f2937', flexDirection: 'row', alignItems: 'center'
-                }}> */}
                     {mode === 'list' && (
                         <Pressable
                             onPress={() => {
@@ -321,7 +348,8 @@ export default function BookingsScreen() {
                             <Pressable onPress={() => fetchBookingById(item.bookingId)}>
                                 <View style={styles.bookingCard}>
                                     <Text style={styles.cardTitle}>{item.customerName}</Text>
-                                    <Text>{item.date}</Text>
+                                    <Text>{item.date ? new Date(item.date).toDateString() : 'N/A'}</Text>
+
                                 </View>
                             </Pressable>
                         )}
@@ -337,10 +365,22 @@ export default function BookingsScreen() {
                             {[
                                 { icon: '📞', value: selectedBooking.contactNumber },
                                 { icon: '📧', value: selectedBooking.email || 'N/A' },
-                                { icon: '📅', value: selectedBooking.date },
+                                // { icon: '📅', value: selectedBooking.date },
                                 { icon: '📍', value: selectedBooking.pickup },
                                 { icon: '🎯', value: selectedBooking.dropoff },
-                                { icon: '⏰', value: `${selectedBooking.pickupTime || 'N/A'} - ${selectedBooking.dropoffTime || 'N/A'}` },
+                                {
+                                    icon: '📅',
+                                    value: selectedBooking.date
+                                        ? new Date(selectedBooking.date).toDateString()
+                                        : 'N/A',
+                                },
+                                {
+                                    icon: '⏰',
+                                    value: selectedBooking.pickupTime && selectedBooking.dropoffTime
+                                        ? `${new Date(selectedBooking.pickupTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} - ${new Date(selectedBooking.dropoffTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`
+                                        : 'N/A',
+                                },
+                                // { icon: '⏰', value: `${selectedBooking.pickupTime || 'N/A'} - ${selectedBooking.dropoffTime || 'N/A'}` },
                                 { icon: '💷', value: `£${selectedBooking.fare || 'TBD'}` },
                                 { icon: '💳', value: selectedBooking.paymentMethod },
                                 { icon: '✅', value: selectedBooking.paymentStatus },
@@ -375,11 +415,8 @@ export default function BookingsScreen() {
                                 ['Customer Name', customerName, setCustomerName],
                                 ['Contact Number', contactNumber, setContactNumber],
                                 ['Email', email, setEmail],
-                                ['Date (YYYY-MM-DD)', date, setDate],
                                 ['Pickup Location', pickup, setPickup],
                                 ['Dropoff Location', dropoff, setDropoff],
-                                ['Pickup Time', pickupTime, setPickupTime],
-                                ['Dropoff Time', dropoffTime, setDropoffTime],
                                 ['Fare', fare, setFare],
                             ].map(([label, value, setter], i) => (
                                 <View key={i} style={{ width: '100%', marginBottom: 12 }}>
@@ -392,6 +429,188 @@ export default function BookingsScreen() {
                                     />
                                 </View>
                             ))}
+
+                            {/* 📅 Date Field */}
+                            {Platform.OS === 'web' ? (
+                                <View style={[styles.pickerWrapper, styles.webPickerFix]}>
+                                    <Text style={styles.label}>Date</Text>
+                                    <DatePicker
+                                        selected={date}
+                                        onChange={(val) => {
+                                            if (val instanceof Date && !isNaN(val.getTime())) setDate(val);
+                                        }}
+                                        className="customPickerInput"
+                                        calendarClassName="customCalendar"
+                                        popperPlacement="bottom-start"
+                                    />
+                                </View>
+                            ) : (
+                                <View style={{ width: '100%', marginBottom: 12 }}>
+                                    <Text style={styles.label}>Date</Text>
+                                    <Pressable onPress={() => setShowDatePicker(true)} style={styles.input}>
+                                        <Text>
+                                            {date instanceof Date && !isNaN(date.getTime())
+                                                ? date.toDateString()
+                                                : 'Select Date'}
+                                        </Text>
+                                    </Pressable>
+                                    {showDatePicker && (
+                                        <DateTimePicker
+                                            value={date}
+                                            mode="date"
+                                            display="default"
+                                            onChange={(event, selectedDate) => {
+                                                setShowDatePicker(false);
+                                                if (selectedDate) setDate(selectedDate);
+                                            }}
+                                        />
+                                    )}
+                                </View>
+                            )}
+
+                            {/* 🕐 Pickup Time Field */}
+                            {Platform.OS === 'web' ? (
+                                <View style={styles.timePickerWrapper}>
+                                    <Text style={styles.label}>Pickup Time</Text>
+                                    <TimePicker
+                                        onChange={(val) => {
+                                            if (val) {
+                                                const [h, m] = val.split(':');
+                                                const d = new Date(pickupTime);
+                                                d.setHours(Number(h));
+                                                d.setMinutes(Number(m));
+                                                setPickupTime(d);
+                                            }
+                                        }}
+                                        value={pickupTime.toTimeString().substring(0, 5)} // "HH:MM"
+                                        disableClock={true}
+                                        format="HH:mm"
+                                        clearIcon={null}
+                                    />
+                                </View>
+                            ) : (
+                                <View style={{ width: '100%', marginBottom: 12 }}>
+                                    <Text style={styles.label}>Pickup Time</Text>
+                                    <Pressable onPress={() => setShowPickupTimePicker(true)} style={styles.input}>
+                                        <Text>
+                                            {pickupTime instanceof Date && !isNaN(pickupTime.getTime())
+                                                ? pickupTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+                                                : 'Select Time'}
+                                        </Text>
+                                    </Pressable>
+                                    {showPickupTimePicker && (
+                                        <DateTimePicker
+                                            value={pickupTime}
+                                            mode="time"
+                                            display="default"
+                                            onChange={(event, selectedTime) => {
+                                                setShowPickupTimePicker(false);
+                                                if (selectedTime) setPickupTime(selectedTime);
+                                            }}
+                                        />
+                                    )}
+                                </View>
+                            )}
+
+                            {/* 🕑 Dropoff Time Field */}
+                            {Platform.OS === 'web' ? (
+                                <View style={styles.timePickerWrapper}>
+                                    <Text style={styles.label}>Dropoff Time</Text>
+                                    <TimePicker
+                                        onChange={(val) => {
+                                            if (val) {
+                                                const [h, m] = val.split(':');
+                                                const d = new Date(dropoffTime);
+                                                d.setHours(Number(h));
+                                                d.setMinutes(Number(m));
+                                                setDropoffTime(d);
+                                            }
+                                        }}
+                                        value={dropoffTime.toTimeString().substring(0, 5)}
+                                        disableClock={true}
+                                        format="HH:mm"
+                                        clearIcon={null}
+                                    />
+                                </View>
+                            ) : (
+                                <View style={{ width: '100%', marginBottom: 12 }}>
+                                    <Text style={styles.label}>Dropoff Time</Text>
+                                    <Pressable onPress={() => setShowDropoffTimePicker(true)} style={styles.input}>
+                                        <Text>
+                                            {dropoffTime instanceof Date && !isNaN(dropoffTime.getTime())
+                                                ? dropoffTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+                                                : 'Select Time'}
+                                        </Text>
+                                    </Pressable>
+                                    {showDropoffTimePicker && (
+                                        <DateTimePicker
+                                            value={dropoffTime}
+                                            mode="time"
+                                            display="default"
+                                            onChange={(event, selectedTime) => {
+                                                setShowDropoffTimePicker(false);
+                                                if (selectedTime) setDropoffTime(selectedTime);
+                                            }}
+                                        />
+                                    )}
+                                </View>
+                            )}
+                            <View style={styles.paymentToggleRow}>
+                                {/* Method */}
+                                <View style={styles.paymentToggleColumn}>
+                                    <Text style={styles.label}>Method</Text>
+                                    <View style={styles.toggleRow}>
+                                        {['cash', 'card'].map((method) => (
+                                            <Pressable
+                                                key={method}
+                                                style={[
+                                                    styles.toggleButton,
+                                                    paymentMethod === method && styles.toggleButtonActive,
+                                                ]}
+                                                onPress={() => setPaymentMethod(method as 'cash' | 'card')}
+                                            >
+                                                <Text
+                                                    style={[
+                                                        styles.toggleButtonText,
+                                                        { color: paymentMethod === method ? '#fff' : '#000' },
+                                                    ]}
+                                                >
+                                                    {method.toUpperCase()}
+                                                </Text>
+                                            </Pressable>
+                                        ))}
+                                    </View>
+                                </View>
+
+                                {/* Status */}
+                                <View style={styles.paymentToggleColumn}>
+                                    <Text style={styles.label}>Status</Text>
+                                    <View style={styles.toggleRow}>
+                                        {['paid', 'pending'].map((status) => (
+                                            <Pressable
+                                                key={status}
+                                                style={[
+                                                    styles.toggleButton,
+                                                    paymentStatus === status && styles.toggleButtonActive,
+                                                ]}
+                                                onPress={() => setPaymentStatus(status as 'paid' | 'pending')}
+                                            >
+                                                <Text
+                                                    style={[
+                                                        styles.toggleButtonText,
+                                                        { color: paymentStatus === status ? '#fff' : '#000' },
+                                                    ]}
+                                                >
+                                                    {status.toUpperCase()}
+                                                </Text>
+                                            </Pressable>
+                                        ))}
+                                    </View>
+                                </View>
+                            </View>
+
+
+
                             <TextInput
                                 style={[styles.input, styles.notesInput]}
                                 placeholder="Notes"
@@ -441,18 +660,18 @@ export default function BookingsScreen() {
                 />
             </KeyboardAvoidingView>
             {isLoading && (
-    <View style={styles.loadingOverlay}>
-        <View style={styles.loadingCard}>
-            {/* <Animated.Image
+                <View style={styles.loadingOverlay}>
+                    <View style={styles.loadingCard}>
+                        {/* <Animated.Image
                 source={require('@/assets/logo.png')} // Replace with your actual logo path
                 style={[styles.logo, { transform: [{ rotate: spin }] }]}
                 resizeMode="contain"
             /> */}
-            <ActivityIndicator size="large" color="#3b82f6" />
-            <Text style={styles.loadingText}>Please wait...</Text>
-        </View>
-    </View>
-)}
+                        <ActivityIndicator size="large" color="#3b82f6" />
+                        <Text style={styles.loadingText}>Please wait...</Text>
+                    </View>
+                </View>
+            )}
 
         </View>
     );
@@ -460,6 +679,27 @@ export default function BookingsScreen() {
 
 
 const styles = StyleSheet.create({
+    timePickerWrapper: {
+        width: '100%',
+        marginBottom: 12,
+        position: 'relative',
+        zIndex: 1,
+    },
+
+    webPickerFix: {
+        alignItems: 'flex-start',
+    },
+    paymentWrapper: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        width: '100%',
+        marginBottom: 12,
+        gap: 12,
+    },
+
+    paymentColumn: {
+        flex: 1,
+    },
     loadingOverlay: {
         position: 'absolute',
         top: 0,
@@ -648,7 +888,19 @@ const styles = StyleSheet.create({
         shadowRadius: 6,
         elevation: 3,
     },
+    pickerWrapper: {
+        width: '100%',
+        marginBottom: 12,
+        zIndex: 10, // ensure stacking
+        position: 'relative', // required for zIndex to apply
+    },
 
+    label: {
+        fontWeight: '500',
+        fontSize: 16,
+        color: '#111827',
+        marginBottom: 6,
+    },
     cardTitle: {
         fontWeight: '700',
         fontSize: 18,
@@ -714,24 +966,37 @@ const styles = StyleSheet.create({
         marginBottom: 6,
     },
 
-    label: {
-        fontWeight: '500',
-        fontSize: 16,
-        color: '#111827',
-    },
-
     toggleRow: {
         flexDirection: 'row',
-        justifyContent: 'space-between',
+        justifyContent: 'flex-start',
         alignItems: 'center',
-        marginBottom: 8,
+        gap: 12, // space between buttons
+        marginTop: 6,
     },
-
     toggleButton: {
         paddingVertical: 8,
-        paddingHorizontal: 12,
+        paddingHorizontal: 16,
         backgroundColor: '#e5e7eb',
         borderRadius: 8,
+        minWidth: 80,
+        alignItems: 'center',
+    },
+    paymentToggleRow: {
+        flexDirection: 'row',
+        justifyContent: 'flex-start', // align to left
+        alignItems: 'flex-start',
+        width: '100%',
+        gap: 20,
+        marginBottom: 16,
+        flexWrap: 'wrap',
+    },
+
+    paymentToggleColumn: {
+        flexGrow: 1,
+        minWidth: 160,
+        position: 'relative',
+        zIndex: 1,
+        alignItems: 'flex-start',
     },
 
     toggleButtonActive: {
