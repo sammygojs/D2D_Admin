@@ -410,10 +410,20 @@ export default function BookingsScreen() {
                                 },
                                 {
                                     icon: '⏰',
-                                    value: selectedBooking.pickupTime && selectedBooking.dropoffTime
-                                        ? `${new Date(selectedBooking.pickupTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} - ${new Date(selectedBooking.dropoffTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`
+                                    value:
+                                      selectedBooking.pickupTime &&
+                                      selectedBooking.dropoffTime &&
+                                      selectedBooking.date
+                                        ? `${new Date(`${selectedBooking.date}T${selectedBooking.pickupTime}:00`).toLocaleTimeString([], {
+                                            hour: '2-digit',
+                                            minute: '2-digit',
+                                          })} - ${new Date(`${selectedBooking.date}T${selectedBooking.dropoffTime}:00`).toLocaleTimeString([], {
+                                            hour: '2-digit',
+                                            minute: '2-digit',
+                                          })}`
                                         : 'N/A',
-                                },
+                                  },
+                                  
                                 // { icon: '⏰', value: `${selectedBooking.pickupTime || 'N/A'} - ${selectedBooking.dropoffTime || 'N/A'}` },
                                 { icon: '💷', value: `£${selectedBooking.fare || 'TBD'}` },
                                 { icon: '💳', value: selectedBooking.paymentMethod },
