@@ -13,6 +13,7 @@ import {
     Alert,
     Animated,
     FlatList, KeyboardAvoidingView,
+    Linking,
     Platform,
     Pressable, ScrollView,
     StyleSheet, Text, TextInput, View
@@ -65,12 +66,12 @@ export default function BookingsScreen() {
 
     useEffect(() => {
         if (bookingId) {
-          setMode('list');
-          fetchBookingById(bookingId as string);
-          // Optional reset
-          setTimeout(() => router.replace('/bookings'), 1000);
+            setMode('list');
+            fetchBookingById(bookingId as string);
+            // Optional reset
+            setTimeout(() => router.replace('/bookings'), 1000);
         }
-      }, [bookingId]);
+    }, [bookingId]);
 
     useEffect(() => {
         if (isLoading) {
@@ -90,6 +91,23 @@ export default function BookingsScreen() {
         inputRange: [0, 1],
         outputRange: ['0deg', '360deg'],
     });
+
+    const openInGoogleMaps = () => {
+        if (!selectedBooking?.pickup || !selectedBooking?.dropoff) {
+            Alert.alert('Missing Location Info', 'Pickup or dropoff location is missing.');
+            return;
+        }
+
+        const source = encodeURIComponent(selectedBooking.pickup);
+        const destination = encodeURIComponent(selectedBooking.dropoff);
+
+        const url = `https://www.google.com/maps/dir/?api=1&origin=${source}&destination=${destination}&travelmode=driving`;
+
+        Linking.openURL(url).catch(err =>
+            Alert.alert('Error', 'Could not open Google Maps.')
+        );
+    };
+
 
     const resetForm = () => {
         setCustomerName('');
@@ -406,6 +424,10 @@ export default function BookingsScreen() {
                                     <Text style={styles.detailValue}>{item.value}</Text>
                                 </View>
                             ))}
+                            <Pressable style={styles.gradientButton} onPress={openInGoogleMaps}>
+                                <Text style={styles.buttonText}>🗺️ Open in Maps</Text>
+                            </Pressable>
+
 
                             <View style={styles.buttonGroupVertical}>
                                 <Pressable style={styles.gradientButton} onPress={generatePDFInvoice}>
