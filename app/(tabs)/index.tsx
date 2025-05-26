@@ -155,29 +155,42 @@ export default function HomeScreen() {
           <Text style={styles.cardText}>No upcoming bookings</Text>
         ) : (
           upcomingBookings.map((b, i) => {
+            if (!b.pickupTime || !b.date) {
+              console.warn('Missing pickupTime or date:', b);
+              return null;
+            }
+            // console.log(b.pickupTime)
+            // console.log(b.date)
             const pickupDateTime = new Date(`${b.date}T${b.pickupTime}:00`);
+            
+            if (isNaN(pickupDateTime.getTime())) return null;
+          
             const day = pickupDateTime.toLocaleDateString('en-UK', {
               weekday: 'long',
               day: 'numeric',
               month: 'short',
               year: 'numeric',
             });
-            
-            const time = pickupDateTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-
+          
+            const time = pickupDateTime.toLocaleTimeString([], {
+              hour: '2-digit',
+              minute: '2-digit',
+            });
+          
             return (
               <Pressable
                 key={i}
                 onPress={() => router.push(`/bookings?bookingId=${b.bookingId}`)}
               >
                 <View style={styles.bookingPreview}>
-                  <Text style={styles.boldText}>{day} — {time}</Text>
+                  <Text style={styles.boldText}>{day} : {time}</Text>
                   <Text>{b.customerName}</Text>
                   <Text style={styles.smallText}>{b.pickup} → {b.dropoff}</Text>
                 </View>
               </Pressable>
             );
           })
+          
 
         )}
       </View>

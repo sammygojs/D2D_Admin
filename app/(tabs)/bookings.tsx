@@ -135,15 +135,17 @@ export default function BookingsScreen() {
 
         const bookingData = {
             customerName, contactNumber, pickup, dropoff,
-            // pickupTime: pickupTime.toISOString(),
-            pickupTime: pickupTime.toTimeString().split(' ')[0].slice(0, 5), // e.g., "17:45"
+            pickupTime: pickupTime instanceof Date && !isNaN(pickupTime.getTime())
+                ? pickupTime.toTimeString().split(' ')[0].slice(0, 5)
+                : '',
 
-            // dropoffTime: dropoffTime.toISOString(),
-            dropoffTime: dropoffTime.toTimeString().split(' ')[0].slice(0, 5),
+            dropoffTime: dropoffTime instanceof Date && !isNaN(dropoffTime.getTime())
+                ? dropoffTime.toTimeString().split(' ')[0].slice(0, 5)
+                : '',
 
             notes, email,
             date: date.toISOString().split('T')[0], // Format: YYYY-MM-DD
-            fare,
+            fare: fare ? parseFloat(fare) : 0,
             paymentMethod,
             paymentStatus,
         };
@@ -192,20 +194,37 @@ export default function BookingsScreen() {
         setEmail(booking.email || '');
         setPickup(booking.pickup);
         setDropoff(booking.dropoff);
-        // setPickupTime(booking.pickupTime || '');
-        // setDropoffTime(booking.dropoffTime || '');
-        setPickupTime(booking.pickupTime ? new Date(booking.pickupTime) : new Date());
-        setDropoffTime(booking.dropoffTime ? new Date(booking.dropoffTime) : new Date());
-        setDate(booking.date ? new Date(booking.date) : new Date());
-
         setNotes(booking.notes || '');
-        // setDate(booking.date);
-        setFare(booking.fare || '');
+        setFare(booking.fare ? String(booking.fare) : '');
         setPaymentMethod(booking.paymentMethod || 'cash');
         setPaymentStatus(booking.paymentStatus || 'pending');
+        setDate(booking.date ? new Date(booking.date) : new Date());
+
+        // Combine date and time properly
+        if (booking.date && booking.pickupTime) {
+            const [h, m] = booking.pickupTime.split(':');
+            const pickup = new Date(booking.date);
+            pickup.setHours(Number(h));
+            pickup.setMinutes(Number(m));
+            setPickupTime(pickup);
+        } else {
+            setPickupTime(new Date());
+        }
+
+        if (booking.date && booking.dropoffTime) {
+            const [h, m] = booking.dropoffTime.split(':');
+            const dropoff = new Date(booking.date);
+            dropoff.setHours(Number(h));
+            dropoff.setMinutes(Number(m));
+            setDropoffTime(dropoff);
+        } else {
+            setDropoffTime(new Date());
+        }
+
         setSelectedBooking(booking);
         setMode('edit');
     };
+
 
     const handleUpdateBooking = async () => {
         if (!selectedBooking) return;
@@ -213,8 +232,16 @@ export default function BookingsScreen() {
         const updatedBooking = {
             bookingId: selectedBooking.bookingId,
             customerName, contactNumber, email, pickup, dropoff,
-            pickupTime, dropoffTime, notes, date, fare,
+            pickupTime: pickupTime instanceof Date && !isNaN(pickupTime.getTime())
+                ? pickupTime.toTimeString().split(' ')[0].slice(0, 5)
+                : '',
+
+            dropoffTime: dropoffTime instanceof Date && !isNaN(dropoffTime.getTime())
+                ? dropoffTime.toTimeString().split(' ')[0].slice(0, 5)
+                : ''
+            , notes, date: date.toISOString().split('T')[0], // Format: YYYY-MM-DD, fare,
             paymentMethod, paymentStatus,
+            fare: fare ? parseFloat(fare) : 0,
         };
 
         setIsLoading(true); // Start loading
@@ -411,19 +438,19 @@ export default function BookingsScreen() {
                                 {
                                     icon: '⏰',
                                     value:
-                                      selectedBooking.pickupTime &&
-                                      selectedBooking.dropoffTime &&
-                                      selectedBooking.date
-                                        ? `${new Date(`${selectedBooking.date}T${selectedBooking.pickupTime}:00`).toLocaleTimeString([], {
-                                            hour: '2-digit',
-                                            minute: '2-digit',
-                                          })} - ${new Date(`${selectedBooking.date}T${selectedBooking.dropoffTime}:00`).toLocaleTimeString([], {
-                                            hour: '2-digit',
-                                            minute: '2-digit',
-                                          })}`
-                                        : 'N/A',
-                                  },
-                                  
+                                        selectedBooking.pickupTime &&
+                                            selectedBooking.dropoffTime &&
+                                            selectedBooking.date
+                                            ? `${new Date(`${selectedBooking.date}T${selectedBooking.pickupTime}:00`).toLocaleTimeString([], {
+                                                hour: '2-digit',
+                                                minute: '2-digit',
+                                            })} - ${new Date(`${selectedBooking.date}T${selectedBooking.dropoffTime}:00`).toLocaleTimeString([], {
+                                                hour: '2-digit',
+                                                minute: '2-digit',
+                                            })}`
+                                            : 'N/A',
+                                },
+
                                 // { icon: '⏰', value: `${selectedBooking.pickupTime || 'N/A'} - ${selectedBooking.dropoffTime || 'N/A'}` },
                                 { icon: '💷', value: `£${selectedBooking.fare || 'TBD'}` },
                                 { icon: '💳', value: selectedBooking.paymentMethod },
@@ -434,12 +461,11 @@ export default function BookingsScreen() {
                                     <Text style={styles.detailValue}>{item.value}</Text>
                                 </View>
                             ))}
-                            <Pressable style={styles.gradientButton} onPress={openInGoogleMaps}>
-                                <Text style={styles.buttonText}>🗺️ Open in Maps</Text>
-                            </Pressable>
-
 
                             <View style={styles.buttonGroupVertical}>
+                                <Pressable style={styles.gradientButton} onPress={openInGoogleMaps}>
+                                    <Text style={styles.buttonText}>🗺️ Open in Maps</Text>
+                                </Pressable>
                                 <Pressable style={styles.gradientButton} onPress={generatePDFInvoice}>
                                     <Text style={styles.buttonText}>📄 Generate Invoice</Text>
                                 </Pressable>
