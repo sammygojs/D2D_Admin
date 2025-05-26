@@ -455,6 +455,7 @@ export default function BookingsScreen() {
                                 { icon: '💷', value: `£${selectedBooking.fare || 'TBD'}` },
                                 { icon: '💳', value: selectedBooking.paymentMethod },
                                 { icon: '✅', value: selectedBooking.paymentStatus },
+                                { icon: '📝', value: selectedBooking.notes || 'No notes' }, 
                             ].map((item, index) => (
                                 <View key={index} style={styles.detailRow}>
                                     <Text style={styles.detailLabel}>{item.icon}</Text>
