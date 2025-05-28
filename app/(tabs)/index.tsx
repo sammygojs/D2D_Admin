@@ -5,6 +5,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 
+
 export default function HomeScreen() {
   const router = useRouter();
   const [bookings, setBookings] = useState([]);
@@ -17,17 +18,6 @@ export default function HomeScreen() {
         const response = await axios.get('https://0izwka3sk3.execute-api.us-east-1.amazonaws.com/v1/bookings');
         const fetchedBookings = response.data.bookings || [];
         setBookings(fetchedBookings);
-
-        // console.log('--- All Bookings ---');
-        // fetchedBookings.forEach((b, i) => {
-        //   console.log(`Booking ${i + 1}:`);
-        //   console.log('Date:', b.date);
-        //   console.log('PickupTime (raw):', b.pickupTime);
-        //   console.log('Parsed pickup datetime:', new Date(b.pickupTime));
-        //   console.log('Now:', new Date());
-        // });
-
-
         const fareSum = fetchedBookings.reduce((acc, curr) => acc + (parseFloat(curr.fare) || 0), 0);
         setTotalFare(fareSum);
       } catch (err) {
@@ -105,7 +95,7 @@ export default function HomeScreen() {
   return (
     <ScrollView style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.title}>🚖 Welcome Back!</Text>
+        <Text style={styles.title}>Welcome Back!</Text>
         <Text style={styles.subtitle}>Here’s what’s going on today:</Text>
       </View>
 
@@ -117,9 +107,9 @@ export default function HomeScreen() {
       <View style={styles.card}>
         {/* <Text style={styles.cardText}>📅 {bookings.length} Bookings Scheduled</Text>
         <Text style={styles.cardText}>💷 £{totalFare.toFixed(2)} Total Fare</Text> */}
-        <Text style={styles.cardText}>📅 {bookings.length} Bookings Scheduled</Text>
+        <Text style={styles.cardText}>{bookings.length} Bookings Scheduled</Text>
         <Text style={styles.description}>All bookings including past and upcoming.</Text>
-        <Text style={styles.cardText}>💷 £{totalFare.toFixed(2)} Total Fare</Text>
+        <Text style={styles.cardText}>£{totalFare.toFixed(2)} Total Fare</Text>
         <Text style={styles.description}>Total fare from all recorded bookings.</Text>
 
       </View>
@@ -127,9 +117,9 @@ export default function HomeScreen() {
       <View style={styles.card}>
         {/* <Text style={styles.cardText}>✅ {completedBookings.length} Completed Rides</Text>
         <Text style={styles.cardText}>💷 £{completedFare.toFixed(2)} Earned</Text> */}
-        <Text style={styles.cardText}>✅ {completedBookings.length} Completed Rides</Text>
+        <Text style={styles.cardText}>{completedBookings.length} Completed Rides</Text>
         <Text style={styles.description}>Trips where pickup time has already passed.</Text>
-        <Text style={styles.cardText}>💷 £{completedFare.toFixed(2)} Earned</Text>
+        <Text style={styles.cardText}>£{completedFare.toFixed(2)} Earned</Text>
         <Text style={styles.description}>Sum of fares from completed trips.</Text>
 
       </View>
@@ -137,9 +127,9 @@ export default function HomeScreen() {
       <View style={styles.card}>
         {/* <Text style={styles.cardText}>🗓️ {scheduledBookings.length} Scheduled Rides</Text>
         <Text style={styles.cardText}>💷 £{scheduledFare.toFixed(2)} Expected</Text> */}
-        <Text style={styles.cardText}>🗓️ {scheduledBookings.length} Scheduled Rides</Text>
+        <Text style={styles.cardText}>{scheduledBookings.length} Scheduled Rides</Text>
         <Text style={styles.description}>Upcoming trips with a future pickup time.</Text>
-        <Text style={styles.cardText}>💷 £{scheduledFare.toFixed(2)} Expected</Text>
+        <Text style={styles.cardText}>£{scheduledFare.toFixed(2)} Expected</Text>
         <Text style={styles.description}>Estimated fare from future bookings.</Text>
 
       </View>
@@ -147,7 +137,7 @@ export default function HomeScreen() {
 
 
       <View style={styles.nextSection}>
-        <Text style={styles.sectionTitle}>🕑 Next Bookings</Text>
+        <Text style={styles.sectionTitle}>Next Bookings</Text>
 
         {loading ? (
           <Text style={styles.cardText}>Loading...</Text>
@@ -205,89 +195,91 @@ export default function HomeScreen() {
 }
 
 const styles = StyleSheet.create({
-  description: {
-    fontSize: 13,
-    color: '#6b7280',
-    marginBottom: 12,
-  },
   container: {
     flex: 1,
-    backgroundColor: '#ffffff',
-    padding: 20,
+    backgroundColor: '#f1f5f9', // light cool-gray background
+    paddingHorizontal: 20,
+    paddingTop: 40,
   },
   header: {
-    paddingTop: 48,
-    paddingBottom: 12,
-    paddingHorizontal: 4,
+    marginBottom: 24,
   },
   title: {
-    fontSize: 26,
+    fontSize: 24,
     fontWeight: '700',
-    marginBottom: 4,
-    color: '#111827',
+    color: '#0f172a', // slate-900
+    marginBottom: 2,
   },
   subtitle: {
-    fontSize: 16,
-    color: '#6b7280',
-    marginBottom: 20,
+    fontSize: 15,
+    color: '#64748b', // slate-500
   },
   card: {
     backgroundColor: '#ffffff',
-    borderRadius: 24,
-    padding: 24,
-    marginBottom: 24,
-    shadowColor: '#000000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.08,
-    shadowRadius: 12,
-    elevation: 6,
+    borderRadius: 6, // Sharper corners
+    padding: 18,
+    marginBottom: 20,
+    borderWidth: 1,
+    borderColor: '#e2e8f0', // slate-200
   },
   cardText: {
-    fontSize: 16,
-    color: '#1f2937',
-    marginBottom: 8,
+    fontSize: 15,
+    color: '#1e293b', // slate-800
+    fontWeight: '500',
+    marginBottom: 6,
+  },
+  description: {
+    fontSize: 13,
+    color: '#64748b', // slate-500
+    marginBottom: 12,
   },
   nextSection: {
-    marginBottom: 24,
+    marginTop: 8,
+    marginBottom: 32,
   },
   sectionTitle: {
-    fontSize: 18,
+    fontSize: 17,
     fontWeight: '700',
-    color: '#111827',
-    marginBottom: 12,
+    color: '#0f172a',
+    marginBottom: 14,
   },
   bookingPreview: {
-    backgroundColor: '#f3f4f6',
-    padding: 16,
-    borderRadius: 12,
+    backgroundColor: '#f8fafc', // slate-50
+    borderRadius: 6,
+    paddingVertical: 12,
+    paddingHorizontal: 14,
     marginBottom: 12,
+    borderLeftWidth: 3,
+    borderLeftColor: '#2563eb', // blue-600
   },
   boldText: {
-    fontSize: 16,
+    fontSize: 15,
     fontWeight: '600',
-    color: '#111827',
+    color: '#1e293b', // slate-800
+    marginBottom: 4,
   },
   smallText: {
     fontSize: 13,
-    color: '#6b7280',
-    marginTop: 4,
+    color: '#64748b',
   },
   buttonGroup: {
-    gap: 16,
     alignItems: 'center',
-    paddingBottom: 50
+    paddingBottom: 60,
   },
   menuButton: {
-    backgroundColor: '#3b82f6',
+    backgroundColor: '#2563eb', // blue-600
+    borderRadius: 6,
     paddingVertical: 14,
     paddingHorizontal: 32,
-    borderRadius: 12,
-    alignItems: 'center',
     width: 220,
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#1d4ed8', // blue-700
   },
   buttonText: {
     color: '#ffffff',
-    fontSize: 16,
+    fontSize: 15,
     fontWeight: '600',
+    letterSpacing: 0.3,
   },
 });

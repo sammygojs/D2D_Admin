@@ -370,10 +370,10 @@ export default function BookingsScreen() {
                     <Text style={{ fontSize: 24, fontWeight: 'bold', color: '#111827', flexShrink: 1 }}>
 
                         {/* <Text style={{ fontSize: 24, fontWeight: 'bold', color: 'white', flexShrink: 1 }}> */}
-                        {mode === 'list' && selectedBooking ? '📄 Booking Details' :
-                            mode === 'list' ? '📋 Bookings List' :
+                        {mode === 'list' && selectedBooking ? 'Booking Details' :
+                            mode === 'list' ? 'Bookings List' :
                                 mode === 'edit' ? '✏️ Edit Booking' :
-                                    mode === 'form' ? '📝 Add Booking' : '📦 Bookings'}
+                                    mode === 'form' ? 'Add Booking' : 'Bookings'}
                     </Text>
                 </View>
 
@@ -381,10 +381,10 @@ export default function BookingsScreen() {
                 {mode === 'none' && (
                     <View style={[styles.buttonGroup, { alignItems: 'center' }]}>
                         <Pressable style={styles.menuButton} onPress={() => setMode('form')}>
-                            <Text style={styles.buttonText}>➕ Add Booking</Text>
+                            <Text style={styles.buttonText}>Add Booking</Text>
                         </Pressable>
                         <Pressable style={styles.menuButton} onPress={() => setMode('list')}>
-                            <Text style={styles.buttonText}>📋 View Bookings</Text>
+                            <Text style={styles.buttonText}>View Bookings</Text>
                         </Pressable>
                     </View>
                 )}
@@ -424,19 +424,19 @@ export default function BookingsScreen() {
                         <View style={styles.detailCard}>
                             <Text style={styles.detailTitle}>{selectedBooking.customerName}</Text>
                             {[
-                                { icon: '📞', value: selectedBooking.contactNumber },
-                                { icon: '📧', value: selectedBooking.email || 'N/A' },
+                                { icon: 'Contact: ', value: selectedBooking.contactNumber },
+                                { icon: 'Email: ', value: selectedBooking.email || 'N/A' },
                                 // { icon: '📅', value: selectedBooking.date },
-                                { icon: '📍', value: selectedBooking.pickup },
-                                { icon: '🎯', value: selectedBooking.dropoff },
+                                { icon: 'Pickup: ', value: selectedBooking.pickup },
+                                { icon: 'Dropoff: ', value: selectedBooking.dropoff },
                                 {
-                                    icon: '📅',
+                                    icon: 'Date: ',
                                     value: selectedBooking.date
                                         ? new Date(selectedBooking.date).toDateString()
                                         : 'N/A',
                                 },
                                 {
-                                    icon: '⏰',
+                                    icon: 'Time: ',
                                     value:
                                         selectedBooking.pickupTime &&
                                             selectedBooking.dropoffTime &&
@@ -452,10 +452,10 @@ export default function BookingsScreen() {
                                 },
 
                                 // { icon: '⏰', value: `${selectedBooking.pickupTime || 'N/A'} - ${selectedBooking.dropoffTime || 'N/A'}` },
-                                { icon: '💷', value: `£${selectedBooking.fare || 'TBD'}` },
-                                { icon: '💳', value: selectedBooking.paymentMethod },
-                                { icon: '✅', value: selectedBooking.paymentStatus },
-                                { icon: '📝', value: selectedBooking.notes || 'No notes' }, 
+                                { icon: 'Fare: ', value: `£${selectedBooking.fare || 'TBD'}` },
+                                { icon: 'Pay method: ', value: selectedBooking.paymentMethod },
+                                { icon: 'Pay status: ', value: selectedBooking.paymentStatus },
+                                { icon: 'Notes: ', value: selectedBooking.notes || 'No notes' }, 
                             ].map((item, index) => (
                                 <View key={index} style={styles.detailRow}>
                                     <Text style={styles.detailLabel}>{item.icon}</Text>
@@ -465,16 +465,16 @@ export default function BookingsScreen() {
 
                             <View style={styles.buttonGroupVertical}>
                                 <Pressable style={styles.gradientButton} onPress={openInGoogleMaps}>
-                                    <Text style={styles.buttonText}>🗺️ Open in Maps</Text>
+                                    <Text style={styles.buttonText}>Open in Maps</Text>
                                 </Pressable>
                                 <Pressable style={styles.gradientButton} onPress={generatePDFInvoice}>
-                                    <Text style={styles.buttonText}>📄 Generate Invoice</Text>
+                                    <Text style={styles.buttonText}>Generate Invoice</Text>
                                 </Pressable>
                                 <Pressable style={styles.gradientButton} onPress={() => handleEditBooking(selectedBooking)}>
-                                    <Text style={styles.buttonText}>✏️ Edit Booking</Text>
+                                    <Text style={styles.buttonText}>Edit Booking</Text>
                                 </Pressable>
                                 <Pressable style={styles.deleteButton} onPress={handleDeleteBooking}>
-                                    <Text style={styles.buttonText}>🗑️ Delete Booking</Text>
+                                    <Text style={styles.buttonText}>Delete Booking</Text>
                                 </Pressable>
 
                             </View>
@@ -820,7 +820,7 @@ const styles = StyleSheet.create({
     },
 
     menuButton: {
-        backgroundColor: '#3b82f6',
+        backgroundColor: 'ffffff',
         paddingVertical: 14,
         borderRadius: 12,
         marginVertical: 10,
@@ -874,7 +874,8 @@ const styles = StyleSheet.create({
     },
 
     detailLabel: {
-        width: 32,
+        // width: 32,
+        width: 120,
         fontSize: 18,
         textAlign: 'center',
         color: '#6b7280',
@@ -896,9 +897,9 @@ const styles = StyleSheet.create({
 
     gradientButton: {
         paddingVertical: 14,
-        borderRadius: 30,
+        borderRadius: 20,
         alignItems: 'center',
-        backgroundColor: '#6a11cb', // fallback if gradient not supported
+        backgroundColor: 'black', // fallback if gradient not supported
     },
 
     // Optional: If using a gradient library like `react-native-linear-gradient`
